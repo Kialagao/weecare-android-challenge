@@ -42,5 +42,6 @@ fun AlbumDTO.asAlbumEntity() : AlbumEntity {
         category = category?.categoryAttributes?.label,
         rights = rights?.label,
         title = title?.label,
-        releaseDate = releaseDate?.releaseDateAttributes?.label)
+        price = price?.label?.subSequence(1, price!!.label!!.length).toString().toDouble(),
+        releaseDate = releaseDate?.label)
 }

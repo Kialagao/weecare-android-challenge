@@ -9,6 +9,7 @@ import com.weemusic.android.domain.Album
 import com.weemusic.android.network.albumdto.asAlbumAndImageEntities
 import com.weemusic.android.repository.localdatasource.MainLocalDataSource
 import com.weemusic.android.repository.remotedatasource.MainNetworkDataSource
+import kotlinx.coroutines.withContext
 import org.threeten.bp.LocalDate
 import java.lang.Exception
 
@@ -18,6 +19,14 @@ class MainRepositoryImpl(private val mainLocalDataSource: MainLocalDataSource,
     override suspend fun getTopAlbums() : List<Album> {
         try {
             return getAlbumsFromDB()
+        } catch (e : Exception) {
+            throw e
+        }
+    }
+
+    override suspend fun getSortedAlbums(orderBy : String): List<Album> {
+        try {
+            return mainLocalDataSource.getSortedAlbums(orderBy)
         } catch (e : Exception) {
             throw e
         }

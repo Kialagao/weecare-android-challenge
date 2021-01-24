@@ -16,6 +16,7 @@ class DatabaseModule {
     fun provideAlbumDatabase(context: Context) : AlbumDatabase {
         return Room
             .databaseBuilder(context, AlbumDatabase::class.java, "albums")
+            .fallbackToDestructiveMigration()
             .build()
     }
 

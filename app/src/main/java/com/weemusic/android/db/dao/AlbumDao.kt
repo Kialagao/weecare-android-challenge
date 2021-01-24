@@ -18,7 +18,12 @@ interface AlbumDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAllAlbumImages(images : List<AlbumImageEntity>)
-    /*
-    @Query()
-    suspend fun fetchSortedAlbums() : List<Album>*/
+
+    @Transaction
+    @Query("SELECT * FROM albums ORDER BY price LIMIT 25")
+    suspend fun fetchAlbumsSortedByPrice() : List<AlbumWithImagesEntity>
+
+    @Transaction
+    @Query("SELECT * FROM albums ORDER BY albumName LIMIT 25")
+    suspend fun fetchAlbumsSortedByTitle() : List<AlbumWithImagesEntity>
 }

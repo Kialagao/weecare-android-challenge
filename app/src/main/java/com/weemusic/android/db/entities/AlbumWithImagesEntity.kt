@@ -4,6 +4,7 @@ import androidx.room.Embedded
 import androidx.room.Relation
 import com.weemusic.android.domain.Album
 import org.threeten.bp.LocalDate
+import org.threeten.bp.format.DateTimeFormatter
 
 data class AlbumWithImagesEntity(
     @Embedded val albumEntity: AlbumEntity,
@@ -32,7 +33,8 @@ fun List<Pair<AlbumEntity, List<AlbumImageEntity>>>.asAlbumListDomainModelFromNe
             album.title,
             album.artist,
             album.category,
-            null
+            "$${album.price.toString()}",
+            LocalDate.parse(album.releaseDate, DateTimeFormatter.ISO_DATE_TIME)
         )
     }
 }

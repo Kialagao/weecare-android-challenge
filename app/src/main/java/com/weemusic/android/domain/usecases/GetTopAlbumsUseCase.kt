@@ -1,7 +1,6 @@
-package com.weemusic.android.domain
+package com.weemusic.android.domain.usecases
 
-import android.util.Log
-import com.weemusic.android.network.services.iTunesApi
+import com.weemusic.android.domain.Album
 import com.weemusic.android.repository.MainRepository
 import javax.inject.Inject
 

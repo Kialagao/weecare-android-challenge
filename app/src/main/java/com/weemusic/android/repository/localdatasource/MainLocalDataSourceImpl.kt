@@ -19,4 +19,12 @@ class MainLocalDataSourceImpl(private val albumDao: AlbumDao) : MainLocalDataSou
     override suspend fun getTopAlbums() : List<Album> {
         return albumDao.fetchTopAlbums().asAlbumListDomainModelFromDB()
     }
+
+    override suspend fun getSortedAlbums(orderBy: String): List<Album> {
+        return if (orderBy == "price") {
+            albumDao.fetchAlbumsSortedByPrice().asAlbumListDomainModelFromDB()
+        } else {
+            albumDao.fetchAlbumsSortedByTitle().asAlbumListDomainModelFromDB()
+        }
+    }
 }

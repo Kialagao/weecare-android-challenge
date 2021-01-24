@@ -1,5 +1,6 @@
 package com.weemusic.android.domain
 
+import com.weemusic.android.network.albumdto.price.Price
 import org.threeten.bp.LocalDate
 
 data class Album(
@@ -10,5 +11,6 @@ data class Album(
     val title: String?,
     val artist: String?,
     val category: String?,
+    val price: String?,
     val releaseDate: LocalDate?
 )

@@ -2,25 +2,17 @@ package com.weemusic.android.ui
 
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
+import android.view.Menu
+import android.view.MenuItem
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
+import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.google.gson.JsonObject
-import com.squareup.picasso.Picasso
 import com.weemusic.android.R
 import com.weemusic.android.di.Injector
-import com.weemusic.android.domain.GetTopAlbumsUseCase
-import io.reactivex.android.schedulers.AndroidSchedulers
+import com.weemusic.android.domain.usecases.GetTopAlbumsUseCase
+import com.weemusic.android.ui.adapter.AlbumsAdapter
 import io.reactivex.disposables.Disposable
-import io.reactivex.functions.Consumer
-import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -34,7 +26,8 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var viewModelFactory: MainViewModelFactory
 
-    private lateinit var adapter: AlbumsAdapter
+    @Inject
+    lateinit var adapter: AlbumsAdapter
     private lateinit var topAlbumsDisposable: Disposable
     private lateinit var mainViewModel: MainViewModel
 
@@ -44,13 +37,27 @@ class MainActivity : AppCompatActivity() {
 
         (application as Injector).createMainSubComponent().inject(this)
 
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
+
         mainViewModel = ViewModelProvider(this, viewModelFactory).get(MainViewModel::class.java)
 
-        val responseLiveData = mainViewModel.getTopAlbums()
-        responseLiveData.observe(this, {
+        mainViewModel.unsortedAlbums.observe(this, {
+            adapter.submitList(it)
+            //sortAlbumsBy("Hello")
+        })
+
+        mainViewModel.sortedAlbums.observe(this, {
             it.forEach { album ->
-                Log.i("Result", album.name.toString())
+                Log.i("Result", album.price)
             }
+            adapter.submitList(it)
+        })
+
+        // Observer for the network error.
+        mainViewModel.onError.observe(this, { isNetworkError ->
+            if (isNetworkError) onNetworkError()
         })
         /*
         val networkComponent = DaggerNetworkComponent.create()
@@ -69,6 +76,9 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
 
+        rvFeed.adapter = adapter
+        /*
+            LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)*/
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 //getTopAlbumsUseCase.fetch()
@@ -96,47 +106,37 @@ class MainActivity : AppCompatActivity() {
             })*/
     }
 
-    class AlbumsAdapter(val albums: List<JsonObject>) : RecyclerView.Adapter<AlbumsViewHolder>() {
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AlbumsViewHolder {
-            val itemView = LayoutInflater
-                .from(parent.context)
-                .inflate(R.layout.album_view_holder, parent, false)
-
-            return AlbumsViewHolder(itemView)
-        }
-
-        override fun getItemCount(): Int = albums.size
-
-        override fun onBindViewHolder(holder: AlbumsViewHolder, position: Int) =
-            holder.onBind(albums[position])
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        val menuInflater = menuInflater
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
     }
 
-    class AlbumsViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-
-        fun onBind(album: JsonObject) {
-            val coverUrl = album
-                .getAsJsonArray("im:image")
-                .last()
-                .asJsonObject
-                .getAsJsonPrimitive("label")
-                .asString
-            val title = album
-                .getAsJsonObject("im:name")
-                .getAsJsonPrimitive("label")
-                .asString
-            val artist = album
-                .getAsJsonObject("im:artist")
-                .getAsJsonPrimitive("label")
-                .asString
-
-            val ivCover: ImageView = itemView.findViewById(R.id.ivCover)
-            val tvTitle: TextView = itemView.findViewById(R.id.tvTitle)
-            val tvArtist: TextView = itemView.findViewById(R.id.tvArtist)
-
-            Picasso.with(itemView.context).load(coverUrl).into(ivCover)
-            tvTitle.text = title
-            tvArtist.text = artist
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        return when(item?.itemId) {
+            R.id.action_price ->  {
+                mainViewModel.getSortedAlbums("price")
+                true
+            }
+            R.id.action_title -> {
+                mainViewModel.getSortedAlbums("title")
+                true
+            }
+            R.id.action_albums -> {
+                if (mainViewModel.unsortedAlbums.value != null) {
+                    adapter.submitList(mainViewModel.unsortedAlbums.value!!)
+                } else {
+                    mainViewModel.getTopAlbums()
+                }
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+    private fun onNetworkError() {
+        if(!mainViewModel.isErrorShown.value!!) {
+            Toast.makeText(this, "Something went wrong...", Toast.LENGTH_LONG).show()
+            mainViewModel.onErrorShown()
         }
     }
 }

@@ -11,30 +11,11 @@ data class AlbumsContainer(
     val feed: Feed
 )
 
-fun AlbumsContainer.asAlbumEntities() : List<AlbumEntity> {
-    return feed.albumDTO.map {
-        AlbumEntity(
-            albumId = it.id.label,
-            albumName = it.name?.label,
-            artist = it.artist?.label,
-            category = it.category?.categoryAttributes?.label,
-            rights = it.rights?.label,
-            title = it.title?.label,
-            releaseDate = it.releaseDate?.releaseDateAttributes?.label)
-    }
-}
-
 fun AlbumsContainer.asAlbumAndImageEntities() : List<Pair<AlbumEntity, List<AlbumImageEntity>>> {
     return feed.albumDTO.map {
         val albumImageEntities = it.images!!.asAlbumImageEntities(it.id.idAttributes.imId)
         val albumEntity = it.asAlbumEntity()
         Pair(albumEntity, albumImageEntities)
-    }
-}
-
-fun List<Image>.asImageUrls() : List<String> {
-    return this.map {
-        it.label
     }
 }
 

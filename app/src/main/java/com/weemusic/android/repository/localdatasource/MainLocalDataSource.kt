@@ -13,4 +13,6 @@ interface MainLocalDataSource {
     suspend fun insertAllAlbumImages(images: List<AlbumImageEntity>)
 
     suspend fun getTopAlbums() : List<Album>
+
+    suspend fun getSortedAlbums(orderBy : String) : List<Album>
 }
