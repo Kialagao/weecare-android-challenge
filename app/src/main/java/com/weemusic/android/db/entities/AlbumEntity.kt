@@ -5,8 +5,6 @@ import androidx.room.PrimaryKey
 import com.weemusic.android.domain.Album
 import org.threeten.bp.LocalDate
 import org.threeten.bp.format.DateTimeFormatter
-import java.text.DateFormat
-import java.text.SimpleDateFormat
 
 @Entity(tableName = "albums")
 data class AlbumEntity(@PrimaryKey(autoGenerate = false)
@@ -21,7 +19,7 @@ data class AlbumEntity(@PrimaryKey(autoGenerate = false)
 )
 
 
-fun AlbumEntity.asAlbumDomainModelFromUrls(images : List<String>) : Album {
+fun AlbumEntity.asAlbum(images : List<String>) : Album {
     return Album(
         id = albumId.toInt(),
         name = albumName,
@@ -39,7 +37,7 @@ fun AlbumEntity.asAlbumDomainModelFromUrls(images : List<String>) : Album {
 "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"	2001-07-04T12:08:56.235-07:00*/
 
 fun AlbumEntity.asAlbumDomainModelFromEntities(images : List<AlbumImageEntity>) : Album {
-    return asAlbumDomainModelFromUrls(images.asImageUrls())
+    return asAlbum(images.asImageUrls())
 }
 
 

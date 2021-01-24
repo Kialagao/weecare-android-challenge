@@ -1,22 +1,21 @@
 package com.weemusic.android.ui
 
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.ViewModelProvider
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.weemusic.android.R
 import com.weemusic.android.di.Injector
 import com.weemusic.android.domain.usecases.GetTopAlbumsUseCase
 import com.weemusic.android.ui.adapter.AlbumsAdapter
-import io.reactivex.disposables.Disposable
+import com.weemusic.android.ui.viewmodel.MainViewModel
+import com.weemusic.android.ui.viewmodel.MainViewModelFactory
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class MainActivity : AppCompatActivity() {
@@ -28,7 +27,8 @@ class MainActivity : AppCompatActivity() {
 
     @Inject
     lateinit var adapter: AlbumsAdapter
-    private lateinit var topAlbumsDisposable: Disposable
+
+    private lateinit var refreshLayout : SwipeRefreshLayout
     private lateinit var mainViewModel: MainViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,73 +37,17 @@ class MainActivity : AppCompatActivity() {
 
         (application as Injector).createMainSubComponent().inject(this)
 
-        val toolbar = findViewById<Toolbar>(R.id.toolbar)
-        setSupportActionBar(toolbar)
-        supportActionBar?.setDisplayShowTitleEnabled(false)
-
         mainViewModel = ViewModelProvider(this, viewModelFactory).get(MainViewModel::class.java)
 
-        mainViewModel.unsortedAlbums.observe(this, {
-            adapter.submitList(it)
-            //sortAlbumsBy("Hello")
-        })
-
-        mainViewModel.sortedAlbums.observe(this, {
-            it.forEach { album ->
-                Log.i("Result", album.price)
-            }
-            adapter.submitList(it)
-        })
-
-        // Observer for the network error.
-        mainViewModel.onError.observe(this, { isNetworkError ->
-            if (isNetworkError) onNetworkError()
-        })
-        /*
-        val networkComponent = DaggerNetworkComponent.create()
-        val domainComponent = DaggerDomainComponent
-            .builder()
-            .networkComponent(networkComponent)
-            .build()
-
-        DaggerAppComponent
-            .builder()
-            .domainComponent(domainComponent)
-            .build()
-            .inject(this)*/
+        setUpToolbar()
+        subscribeToLiveData()
+        setRefreshLayout()
     }
 
     override fun onStart() {
         super.onStart()
 
         rvFeed.adapter = adapter
-        /*
-            LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)*/
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                //getTopAlbumsUseCase.fetch()
-
-
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-        /*
-        topAlbumsDisposable = getTopAlbumsUseCase
-            .perform()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .map { response ->
-                response.getAsJsonObject("feed")
-                    .getAsJsonArray("entry")
-                    .map { it.asJsonObject }
-            }
-            .subscribe(Consumer {
-                adapter = AlbumsAdapter(it)
-                rvFeed.adapter = adapter
-                rvFeed.layoutManager =
-                    LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-            })*/
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -133,7 +77,42 @@ class MainActivity : AppCompatActivity() {
             else -> super.onOptionsItemSelected(item)
         }
     }
-    private fun onNetworkError() {
+
+    private fun setUpToolbar() {
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
+    }
+
+    private fun subscribeToLiveData() {
+        mainViewModel.unsortedAlbums.observe(this, {
+            adapter.submitList(it)
+        })
+
+        mainViewModel.sortedAlbums.observe(this, {
+            adapter.submitList(it)
+        })
+
+        // Observer for fetching error.
+        mainViewModel.onError.observe(this, { isNetworkError ->
+            if (isNetworkError) onFetchError()
+        })
+
+        mainViewModel.isRefreshing.observe(this, { isRefreshing ->
+            if (!isRefreshing) rvFeed.visibility = View.VISIBLE
+            refreshLayout.isRefreshing = isRefreshing
+        })
+    }
+
+    private fun setRefreshLayout() {
+        refreshLayout = findViewById(R.id.swipeRefreshLayout)
+        refreshLayout.setOnRefreshListener {
+            rvFeed.visibility = View.INVISIBLE
+            mainViewModel.updateTopAlbums()
+        }
+    }
+
+    private fun onFetchError() {
         if(!mainViewModel.isErrorShown.value!!) {
             Toast.makeText(this, "Something went wrong...", Toast.LENGTH_LONG).show()
             mainViewModel.onErrorShown()

@@ -3,7 +3,7 @@ package com.weemusic.android.repository.localdatasource
 import com.weemusic.android.db.dao.AlbumDao
 import com.weemusic.android.db.entities.AlbumEntity
 import com.weemusic.android.db.entities.AlbumImageEntity
-import com.weemusic.android.db.entities.asAlbumListDomainModelFromDB
+import com.weemusic.android.db.entities.asAlbums
 import com.weemusic.android.domain.Album
 
 class MainLocalDataSourceImpl(private val albumDao: AlbumDao) : MainLocalDataSource {
@@ -17,14 +17,18 @@ class MainLocalDataSourceImpl(private val albumDao: AlbumDao) : MainLocalDataSou
     }
 
     override suspend fun getTopAlbums() : List<Album> {
-        return albumDao.fetchTopAlbums().asAlbumListDomainModelFromDB()
+        return albumDao.fetchTopAlbums().asAlbums()
     }
 
     override suspend fun getSortedAlbums(orderBy: String): List<Album> {
         return if (orderBy == "price") {
-            albumDao.fetchAlbumsSortedByPrice().asAlbumListDomainModelFromDB()
+            albumDao.fetchAlbumsSortedByPrice().asAlbums()
         } else {
-            albumDao.fetchAlbumsSortedByTitle().asAlbumListDomainModelFromDB()
+            albumDao.fetchAlbumsSortedByTitle().asAlbums()
         }
+    }
+
+    override suspend fun deleteAllAlbums() {
+        albumDao.deleteAllAlbums()
     }
 }

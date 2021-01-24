@@ -1,16 +1,10 @@
 package com.weemusic.android.repository
 
-import android.util.Log
-import com.weemusic.android.db.entities.AlbumEntity
-import com.weemusic.android.db.entities.AlbumImageEntity
-import com.weemusic.android.db.entities.asAlbumListDomainModelFromNetWork
-import com.weemusic.android.db.entities.asImageUrls
+import com.weemusic.android.db.entities.*
 import com.weemusic.android.domain.Album
 import com.weemusic.android.network.albumdto.asAlbumAndImageEntities
 import com.weemusic.android.repository.localdatasource.MainLocalDataSource
 import com.weemusic.android.repository.remotedatasource.MainNetworkDataSource
-import kotlinx.coroutines.withContext
-import org.threeten.bp.LocalDate
 import java.lang.Exception
 
 class MainRepositoryImpl(private val mainLocalDataSource: MainLocalDataSource,
@@ -32,14 +26,27 @@ class MainRepositoryImpl(private val mainLocalDataSource: MainLocalDataSource,
         }
     }
 
-    /*
-    override suspend fun updateArtists(): List<Artist>? {
-        val newListOfArtists= getArtistsFromAPI()
-        artistLocalDataSource.clearAll()
-        artistLocalDataSource.saveArtistsToDB(newListOfArtists)
-        artistCacheDataSource.saveArtistsToCache(newListOfArtists)
-        return newListOfArtists
-    }*/
+    override suspend fun updateTopAlbums(): List<Album> {
+        try {
+            val newAlbumAndImageEntities = getAlbumsFromAPI()
+            mainLocalDataSource.deleteAllAlbums()
+
+            val newAlbums = newAlbumAndImageEntities.map {
+                it.first.asAlbum(it.second.asImageUrls())
+            }
+
+            val albumEntities = mutableListOf<AlbumEntity>()
+            val albumImageEntities = mutableListOf<AlbumImageEntity>()
+
+            collectEntities(newAlbumAndImageEntities, albumEntities, albumImageEntities)
+
+            mainLocalDataSource.insertAllAlbumImages(albumImageEntities)
+            mainLocalDataSource.insertAllAlbums(albumEntities)
+            return newAlbums
+        } catch (e: Exception) {
+            throw e
+        }
+    }
 
     private suspend fun getAlbumsFromAPI() : List<Pair<AlbumEntity, List<AlbumImageEntity>>> {
         var albumAndImageEntities = listOf<Pair<AlbumEntity, List<AlbumImageEntity>>>()
@@ -74,21 +81,29 @@ class MainRepositoryImpl(private val mainLocalDataSource: MainLocalDataSource,
             return albums
         } else {
             val albumAndImageEntities = getAlbumsFromAPI()
-            albums = albumAndImageEntities.asAlbumListDomainModelFromNetWork()
+            albums = albumAndImageEntities.map {
+                it.first.asAlbum(it.second.asImageUrls())
+            }
 
             val albumEntities = mutableListOf<AlbumEntity>()
             val albumImageEntities = mutableListOf<AlbumImageEntity>()
 
-            albumAndImageEntities.forEach {
-                val images = it.second
-                val album = it.first
-                albumEntities.add(album)
-                albumImageEntities.addAll(images as Collection<AlbumImageEntity>)
-            }
+            collectEntities(albumAndImageEntities, albumEntities, albumImageEntities)
 
             mainLocalDataSource.insertAllAlbumImages(albumImageEntities)
             mainLocalDataSource.insertAllAlbums(albumEntities)
         }
         return albums
+    }
+
+    private fun collectEntities(albumAndImageEntities: List<Pair<AlbumEntity, List<AlbumImageEntity>>>,
+                                albumEntities: MutableList<AlbumEntity>,
+                                albumImageEntities: MutableList<AlbumImageEntity>) {
+        albumAndImageEntities.forEach {
+            val images = it.second
+            val album = it.first
+            albumEntities.add(album)
+            albumImageEntities.addAll(images as Collection<AlbumImageEntity>)
+        }
     }
 }

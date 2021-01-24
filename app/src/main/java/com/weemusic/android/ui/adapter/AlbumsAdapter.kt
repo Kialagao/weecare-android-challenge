@@ -19,7 +19,6 @@ import javax.inject.Inject
 class AlbumsAdapter @Inject constructor() : RecyclerView.Adapter<AlbumsAdapter.AlbumsViewHolder>() {
 
     private var albums: ArrayList<Album> = arrayListOf()
-    private var unsortedAlbums: ArrayList<Album> = arrayListOf()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AlbumsViewHolder {
         val itemView = LayoutInflater
@@ -37,7 +36,6 @@ class AlbumsAdapter @Inject constructor() : RecyclerView.Adapter<AlbumsAdapter.A
     fun submitList(newAlbums : List<Album>) {
         this.albums.clear()
         this.albums.addAll(newAlbums)
-        this.unsortedAlbums.addAll(newAlbums)
         notifyDataSetChanged()
     }
 
@@ -68,6 +66,8 @@ class AlbumsAdapter @Inject constructor() : RecyclerView.Adapter<AlbumsAdapter.A
             tvTitle.text = title
             tvArtist.text = artist
             tvPrice.text = price
+
+            // If album's release date is less than or equal to 7 days ago, then it is new.
             tvNewAlbum.visibility = if (epochNow - albumEpoch <= 7) View.VISIBLE else View.GONE
         }
     }

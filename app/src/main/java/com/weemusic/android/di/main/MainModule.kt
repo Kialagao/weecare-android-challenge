@@ -2,7 +2,8 @@ package com.weemusic.android.di.main
 
 import com.weemusic.android.domain.usecases.GetSortedAlbumsUseCase
 import com.weemusic.android.domain.usecases.GetTopAlbumsUseCase
-import com.weemusic.android.ui.MainViewModelFactory
+import com.weemusic.android.domain.usecases.UpdateTopAlbumsUseCase
+import com.weemusic.android.ui.viewmodel.MainViewModelFactory
 import dagger.Module
 import dagger.Provides
 
@@ -13,8 +14,9 @@ class MainModule {
     @Provides
     fun provideMainViewModelFactory(
         getTopAlbumsUseCase: GetTopAlbumsUseCase,
-        getSortedAlbumsUseCase: GetSortedAlbumsUseCase
+        getSortedAlbumsUseCase: GetSortedAlbumsUseCase,
+        updateTopAlbumsUseCase: UpdateTopAlbumsUseCase
     ) : MainViewModelFactory {
-        return MainViewModelFactory(getTopAlbumsUseCase, getSortedAlbumsUseCase)
+        return MainViewModelFactory(getTopAlbumsUseCase, getSortedAlbumsUseCase, updateTopAlbumsUseCase)
     }
 }

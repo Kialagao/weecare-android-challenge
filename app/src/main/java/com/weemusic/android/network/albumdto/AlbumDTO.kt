@@ -42,6 +42,6 @@ fun AlbumDTO.asAlbumEntity() : AlbumEntity {
         category = category?.categoryAttributes?.label,
         rights = rights?.label,
         title = title?.label,
-        price = price?.label?.subSequence(1, price!!.label!!.length).toString().toDouble(),
+        price = price?.label?.subSequence(1, price!!.label!!.length).toString().toDouble(), // Remove dollar sign
         releaseDate = releaseDate?.label)
 }
