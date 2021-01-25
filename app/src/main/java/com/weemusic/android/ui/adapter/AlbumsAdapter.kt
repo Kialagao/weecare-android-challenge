@@ -1,17 +1,14 @@
 package com.weemusic.android.ui.adapter
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.google.gson.JsonObject
 import com.squareup.picasso.Picasso
 import com.weemusic.android.R
 import com.weemusic.android.domain.Album
-import com.weemusic.android.ui.MainActivity
 import org.threeten.bp.LocalDate
 import javax.inject.Inject
 
@@ -48,8 +45,8 @@ class AlbumsAdapter @Inject constructor() : RecyclerView.Adapter<AlbumsAdapter.A
             val price = album.price
             val releaseDate = album.releaseDate
 
-            val albumEpoch = releaseDate!!.toEpochDay()
-            val epochNow = LocalDate.now().toEpochDay()
+            val albumEpochDay = releaseDate!!.toEpochDay()
+            val epochDayNow = LocalDate.now().toEpochDay()
 
             val ivCover: ImageView = itemView.findViewById(R.id.ivCover)
             val tvTitle: TextView = itemView.findViewById(R.id.tvTitle)
@@ -68,7 +65,7 @@ class AlbumsAdapter @Inject constructor() : RecyclerView.Adapter<AlbumsAdapter.A
             tvPrice.text = price
 
             // If album's release date is less than or equal to 7 days ago, then it is new.
-            tvNewAlbum.visibility = if (epochNow - albumEpoch <= 7) View.VISIBLE else View.GONE
+            tvNewAlbum.visibility = if (epochDayNow - albumEpochDay <= 7) View.VISIBLE else View.GONE
         }
     }
 }

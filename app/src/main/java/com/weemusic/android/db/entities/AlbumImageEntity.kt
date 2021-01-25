@@ -20,9 +20,5 @@ fun List<AlbumImageEntity>.asImageUrls() : List<String> {
     }
 }
 
-fun AlbumImageEntity.asImageUrl() : String{
-    return imageUrl
-}
-
 
 

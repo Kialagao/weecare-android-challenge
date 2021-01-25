@@ -32,12 +32,5 @@ fun AlbumEntity.asAlbum(images : List<String>) : Album {
         releaseDate = LocalDate.parse(releaseDate, DateTimeFormatter.ISO_DATE_TIME)
     )
 }
-/*
-"yyyy-MM-dd'T'HH:mm:ss.SSSZ"	2001-07-04T12:08:56.235-0700
-"yyyy-MM-dd'T'HH:mm:ss.SSSXXX"	2001-07-04T12:08:56.235-07:00*/
-
-fun AlbumEntity.asAlbumDomainModelFromEntities(images : List<AlbumImageEntity>) : Album {
-    return asAlbum(images.asImageUrls())
-}
 
 

@@ -1,6 +1,5 @@
 package com.weemusic.android.domain
 
-import com.weemusic.android.network.albumdto.price.Price
 import org.threeten.bp.LocalDate
 
 data class Album(

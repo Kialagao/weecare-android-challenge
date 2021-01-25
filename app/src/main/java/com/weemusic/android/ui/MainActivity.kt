@@ -28,7 +28,6 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var adapter: AlbumsAdapter
 
-    private lateinit var refreshLayout : SwipeRefreshLayout
     private lateinit var mainViewModel: MainViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -100,22 +99,18 @@ class MainActivity : AppCompatActivity() {
 
         mainViewModel.isRefreshing.observe(this, { isRefreshing ->
             if (!isRefreshing) rvFeed.visibility = View.VISIBLE
-            refreshLayout.isRefreshing = isRefreshing
+            swipeRefreshLayout.isRefreshing = isRefreshing
         })
     }
 
     private fun setRefreshLayout() {
-        refreshLayout = findViewById(R.id.swipeRefreshLayout)
-        refreshLayout.setOnRefreshListener {
+        swipeRefreshLayout.setOnRefreshListener {
             rvFeed.visibility = View.INVISIBLE
             mainViewModel.updateTopAlbums()
         }
     }
 
     private fun onFetchError() {
-        if(!mainViewModel.isErrorShown.value!!) {
-            Toast.makeText(this, "Something went wrong...", Toast.LENGTH_LONG).show()
-            mainViewModel.onErrorShown()
-        }
+        Toast.makeText(this, "Something went wrong...", Toast.LENGTH_LONG).show()
     }
 }

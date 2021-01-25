@@ -16,17 +16,12 @@ class MainViewModel(
 ) : ViewModel() {
 
     /* Create two LiveDatas for each data to be observed.
-       One is for observing, and the other is for view model to modify. */
+       One is for observing, the other is for view model to modify. */
 
     // LiveData for fetching errors.
     private var _onError = MutableLiveData(false)
     val onError: LiveData<Boolean>
         get() = _onError
-
-    // Flag to display the error message.
-    private var _isErrorShown = MutableLiveData(false)
-    val isErrorShown: LiveData<Boolean>
-        get() = _isErrorShown
 
     // LiveData for sorted albums
     private var _sortedAlbums = MutableLiveData(listOf<Album>())
@@ -42,7 +37,6 @@ class MainViewModel(
     private var _isRefreshing = MutableLiveData(true)
     val isRefreshing: LiveData<Boolean>
         get() = _isRefreshing
-
 
     init {
         getTopAlbums()
@@ -92,9 +86,5 @@ class MainViewModel(
                 _isRefreshing.postValue(false)
             }
         }
-    }
-
-    fun onErrorShown() {
-        _isErrorShown.value = true
     }
 }
